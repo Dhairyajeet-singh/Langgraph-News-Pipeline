@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Newsletter Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1614;
+    --paper: #faf7f2;
+    --rule: #2a2520;
+    --muted: #6b6660;
+    --accent: #c8451e;
+    --accent-soft: #e8d5cc;
+    --ok: #2d6a4f;
+    --warn: #b8860b;
+    --err: #9b2c2c;
+    --panel: #f3ede4;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+
+  /* Masthead */
+  .masthead {
+    border-bottom: 3px double var(--ink);
+    padding: 28px 40px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .masthead-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 44px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin: 0;
+  }
+  .masthead-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .masthead-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-align: right;
+  }
+  .masthead-meta strong { color: var(--ink); }
+
+  /* Layout */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 40px 80px;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 40px;
+  }
+  @media (max-width: 980px) {
+    .container { grid-template-columns: 1fr; }
+  }
+
+  /* Form column */
+  .form-col h2, .output-col h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .col-tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 12px;
+  }
+
+  label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin: 18px 0 6px;
+    font-weight: 700;
+  }
+  textarea, input[type="text"], input[type="email"], input[type="number"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    border-radius: 0;
+    outline: none;
+    transition: background 0.15s;
+  }
+  textarea:focus, input:focus {
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Toggle */
+  .toggle-block {
+    margin-top: 22px;
+    padding: 14px 16px;
+    background: var(--panel);
+    border-left: 3px solid var(--accent);
+  }
+  .toggle-row {
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; user-select: none;
+  }
+  .toggle-row input { display: none; }
+  .toggle-pill {
+    width: 38px; height: 22px;
+    background: var(--muted);
+    border-radius: 11px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-pill::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    background: var(--paper);
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle-row input:checked + .toggle-pill { background: var(--accent); }
+  .toggle-row input:checked + .toggle-pill::after { transform: translateX(16px); }
+  .toggle-label {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .toggle-hint {
+    font-size: 12px; color: var(--muted);
+    margin-top: 4px; padding-left: 50px;
+  }
+
+  /* Run button */
+  .run-btn {
+    margin-top: 28px;
+    width: 100%;
+    padding: 16px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .run-btn:hover:not(:disabled) { background: var(--accent); }
+  .run-btn:disabled { background: var(--muted); cursor: not-allowed; }
+
+  /* Output column */
+  .output-col {
+    border-left: 1px solid var(--rule);
+    padding-left: 40px;
+    min-height: 600px;
+  }
+  @media (max-width: 980px) {
+    .output-col { border-left: none; padding-left: 0; padding-top: 24px;
+                  border-top: 1px solid var(--rule); }
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .status-dot.idle { background: var(--muted); animation: none; }
+  .status-dot.running { background: var(--accent); }
+  .status-dot.done { background: var(--ok); animation: none; }
+  .status-dot.error { background: var(--err); animation: none; }
+  .status-dot.waiting { background: var(--warn); }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+  }
+
+  /* Log panel */
+  .log-panel {
+    background: #1a1614;
+    color: #e8e2d5;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 16px;
+    max-height: 240px;
+    overflow-y: auto;
+    margin-bottom: 24px;
+    border: 1px solid var(--ink);
+  }
+  .log-panel:empty::before {
+    content: "// awaiting input";
+    color: #6b6660;
+    font-style: italic;
+  }
+  .log-line { white-space: pre-wrap; word-break: break-word; }
+  .log-ts { color: #8b857c; margin-right: 8px; }
+  .log-info  { color: #8ab4d8; }
+  .log-ok    { color: #7ec894; }
+  .log-warn  { color: #d4a85a; }
+  .log-error { color: #e88080; }
+
+  /* Draft preview */
+  .preview-wrap { display: none; }
+  .preview-wrap.active { display: block; }
+  .preview-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: 0;
+  }
+  .preview-tab {
+    padding: 8px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--ink);
+    border-bottom: none;
+    margin-right: -1px;
+    color: var(--muted);
+  }
+  .preview-tab.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .preview-content {
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    padding: 28px 32px;
+    max-height: 520px;
+    overflow-y: auto;
+  }
+  .preview-content.rendered h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1.15;
+    margin: 0 0 8px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 12px;
+  }
+  .preview-content.rendered h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    margin: 28px 0 8px;
+    color: var(--accent);
+  }
+  .preview-content.rendered p { margin: 8px 0 14px; }
+  .preview-content.rendered em {
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-style: normal; text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .preview-content.rendered hr {
+    border: none; border-top: 1px solid var(--rule); margin: 24px 0;
+  }
+  .preview-content.markdown-src {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    line-height: 1.6;
+  }
+  .preview-content textarea {
+    width: 100%; border: none; outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.6;
+    min-height: 480px; resize: vertical;
+    background: transparent;
+  }
+
+  /* HITL action bar */
+  .hitl-bar {
+    display: none;
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .hitl-bar.active { display: flex; }
+  .hitl-msg {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .hitl-btns { display: flex; gap: 8px; }
+  .hitl-btn {
+    padding: 10px 18px;
+    border: 1px solid var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .hitl-btn.primary { background: var(--ink); color: var(--paper); }
+  .hitl-btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+  .hitl-btn.secondary { background: transparent; color: var(--ink); }
+  .hitl-btn.secondary:hover { background: var(--ink); color: var(--paper); }
+
+  /* Done banner */
+  .done-banner {
+    display: none;
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .done-banner.active { display: block; }
+  .done-banner strong { color: #7ec894; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1 class="masthead-title">The <em>Newsletter</em> Agent</h1>
+  <div class="masthead-meta">
+    <div><strong>Vol. I · Edition 1</strong></div>
+    <div>An autonomous editorial assistant</div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ── LEFT: input form ── -->
+  <section class="form-col">
+    <h2>Brief the Agent</h2>
+    <div class="col-tagline">// goal, depth, recipient</div>
+
+    <label for="goal">The goal, in plain English</label>
+    <textarea id="goal" placeholder="Create a weekly newsletter on the latest AI agent news and send it to our subscribers."></textarea>
+
+    <label for="email">Recipient email</label>
+    <input type="email" id="email" placeholder="reader@example.com">
+
+    <div class="row">
+      <div>
+        <label for="top_n">Search depth</label>
+        <input type="number" id="top_n" min="3" max="15" value="7">
+      </div>
+      <div>
+        <label for="parallel">Concurrency</label>
+        <input type="number" id="parallel" min="1" max="8" value="4">
+      </div>
+    </div>
+
+    <div class="toggle-block">
+      <label class="toggle-row">
+        <input type="checkbox" id="hitl">
+        <span class="toggle-pill"></span>
+        <span class="toggle-label">Human-in-the-loop</span>
+      </label>
+      <div class="toggle-hint">Review &amp; edit the draft before it sends.</div>
+    </div>
+
+    <button id="run-btn" class="run-btn">▸ Run agent</button>
+  </section>
+
+  <!-- ── RIGHT: live output ── -->
+  <section class="output-col">
+    <h2>The Newsroom</h2>
+    <div class="col-tagline">// live trace</div>
+
+    <div class="status-bar">
+      <span class="status-dot idle" id="status-dot"></span>
+      <span id="status-text">Idle — awaiting brief</span>
+    </div>
+
+    <div class="log-panel" id="log-panel"></div>
+
+    <div class="preview-wrap" id="preview-wrap">
+      <div class="preview-tabs">
+        <button class="preview-tab active" data-tab="rendered">Rendered</button>
+        <button class="preview-tab" data-tab="markdown">Markdown</button>
+        <button class="preview-tab" data-tab="edit">Edit</button>
+      </div>
+      <div class="preview-content rendered" id="preview-rendered"></div>
+      <div class="preview-content markdown-src" id="preview-markdown" style="display:none"></div>
+      <div class="preview-content" id="preview-edit" style="display:none">
+        <textarea id="edit-textarea"></textarea>
+      </div>
+
+      <div class="hitl-bar" id="hitl-bar">
+        <div class="hitl-msg">Review the draft. Edit if you want, then approve.</div>
+        <div class="hitl-btns">
+          <button class="hitl-btn secondary" id="hitl-edit-btn">Use my edits</button>
+          <button class="hitl-btn primary" id="hitl-approve-btn">Approve &amp; send</button>
+        </div>
+      </div>
+
+      <div class="done-banner" id="done-banner"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- markdown renderer -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let currentJobId = null;
+let currentDraft = "";
+
+function setStatus(state, text) {
+  const dot = $('status-dot');
+  dot.className = 'status-dot ' + state;
+  $('status-text').textContent = text;
+}
+
+function appendLog(item) {
+  const panel = $('log-panel');
+  if (item._status || item._end) return;  // status events handled separately
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  const lvl = (item.level || 'info').toLowerCase();
+  line.innerHTML =
+    `<span class="log-ts">${item.ts || ''}</span>` +
+    `<span class="log-${lvl}">[${lvl.toUpperCase().padEnd(5)}]</span> ` +
+    escapeHtml(item.msg);
+  panel.appendChild(line);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[c]);
+}
+
+function showDraft(md) {
+  currentDraft = md;
+  $('preview-wrap').classList.add('active');
+  $('preview-rendered').innerHTML = marked.parse(md);
+  $('preview-markdown').textContent = md;
+  $('edit-textarea').value = md;
+}
+
+// Tab switching
+document.querySelectorAll('.preview-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.preview-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    $('preview-rendered').style.display = tab === 'rendered' ? 'block' : 'none';
+    $('preview-markdown').style.display = tab === 'markdown' ? 'block' : 'none';
+    $('preview-edit').style.display     = tab === 'edit'     ? 'block' : 'none';
+  });
+});
+
+$('run-btn').addEventListener('click', async () => {
+  const goal = $('goal').value.trim();
+  if (!goal) { alert('Please enter a goal.'); return; }
+  const payload = {
+    goal,
+    email: $('email').value.trim(),
+    top_n: parseInt($('top_n').value) || 7,
+    max_parallel: parseInt($('parallel').value) || 4,
+    hitl: $('hitl').checked,
+  };
+
+  // Reset UI
+  $('log-panel').innerHTML = '';
+  $('preview-wrap').classList.remove('active');
+  $('hitl-bar').classList.remove('active');
+  $('done-banner').classList.remove('active');
+  $('run-btn').disabled = true;
+  setStatus('running', 'Starting…');
+
+  try {
+    const r = await fetch('/run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    currentJobId = data.job_id;
+    streamLogs(currentJobId);
+  } catch (err) {
+    setStatus('error', 'Error: ' + err.message);
+    $('run-btn').disabled = false;
+  }
+});
+
+function streamLogs(jobId) {
+  const es = new EventSource('/logs/' + jobId);
+  es.onmessage = (ev) => {
+    const item = JSON.parse(ev.data);
+    if (item._end) { es.close(); return; }
+    if (item._status) {
+      handleStatus(item);
+      return;
+    }
+    appendLog(item);
+  };
+  es.onerror = () => { es.close(); };
+}
+
+async function handleStatus(item) {
+  const status = item._status;
+  if (status === 'running') {
+    setStatus('running', 'Working…');
+  } else if (status === 'awaiting_human') {
+    setStatus('waiting', 'Awaiting your review');
+    showDraft(item.draft || '');
+    $('hitl-bar').classList.add('active');
+    $('run-btn').disabled = false;
+  } else if (status === 'done') {
+    setStatus('done', 'Complete');
+    showDraft(item.draft || '');
+    $('hitl-bar').classList.remove('active');
+    const banner = $('done-banner');
+    const sent = item.email_sent
+      ? `<strong>✓ Email sent.</strong> Saved to <code>${item.output_path}</code>`
+      : `<strong>✓ Saved.</strong> File: <code>${item.output_path}</code> &nbsp; (no recipient — email skipped)`;
+    banner.innerHTML = sent;
+    banner.classList.add('active');
+    $('run-btn').disabled = false;
+  } else if (status === 'error') {
+    setStatus('error', 'Error: ' + (item.error || 'unknown'));
+    $('run-btn').disabled = false;
+  }
+}
+
+$('hitl-approve-btn').addEventListener('click', () => resume(false));
+$('hitl-edit-btn').addEventListener('click', () => resume(true));
+
+async function resume(useEdits) {
+  if (!currentJobId) return;
+  const body = {};
+  if (useEdits) body.edited_markdown = $('edit-textarea').value;
+  $('hitl-bar').classList.remove('active');
+  setStatus('running', 'Publishing…');
+  try {
+    await fetch('/resume/' + currentJobId, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+    streamLogs(currentJobId);
+  } catch (err) {
+    setStatus('error', 'Resume failed: ' + err.message);
+  }
+}
+</script>
+</body>
+</html>
