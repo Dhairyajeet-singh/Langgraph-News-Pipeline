@@ -1,6 +1,6 @@
 """
 Tool layer. Three categories:
-  1. LLM tool      → call_gemini()    wraps google-generativeai
+  1. LLM tool      → call_gemini()    wraps OpenAI (name kept for back-compat)
   2. Research tool → research()       wraps the async scraper
   3. IO tools      → save_markdown(), send_email()
 """
@@ -16,8 +16,7 @@ from email.mime.text import MIMEText
 from email import encoders
 from typing import Optional
 
-from google import genai
-from google.genai import types as genai_types
+from openai import OpenAI
 import markdown as md_lib
 
 from scraper.pipeline import scrape_topic
@@ -39,37 +38,46 @@ def _log(level: str, msg: str):
             pass
 
 
-# ── 1. Gemini LLM tool ──────────────────────────────────────────────────────
-_gemini_client = None
+# ── 1. LLM tool (OpenAI) ────────────────────────────────────────────────────
+# Function is still named call_gemini() so nodes.py doesn't need to change.
+# The default model is read from OPENAI_MODEL env var, falling back to gpt-4o-mini.
+_openai_client = None
 
-def _ensure_gemini():
-    global _gemini_client
-    if _gemini_client is not None:
-        return _gemini_client
-    api_key = os.getenv("GEMINI_API_KEY")
+def _ensure_openai() -> OpenAI:
+    global _openai_client
+    if _openai_client is not None:
+        return _openai_client
+    api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        raise RuntimeError("GEMINI_API_KEY not set in environment (.env)")
-    _gemini_client = genai.Client(api_key=api_key)
-    return _gemini_client
+        raise RuntimeError("OPENAI_API_KEY not set in environment (.env)")
+    _openai_client = OpenAI(api_key=api_key)
+    return _openai_client
 
 
 def call_gemini(system_prompt: str, user_message: str,
-                model: str = "gemini-2.0-flash",
+                model: Optional[str] = None,
                 temperature: float = 0.4) -> str:
     """
-    Single-turn call to Gemini. Returns the model's text output.
-    `system_prompt` is passed as the system instruction.
+    Single-turn LLM call. Now backed by OpenAI under the hood.
+    Function name kept for back-compat with the rest of the codebase.
+
+    `model` defaults to OPENAI_MODEL env var, then "gpt-4o-mini".
     """
-    client = _ensure_gemini()
-    resp = client.models.generate_content(
-        model=model,
-        contents=user_message,
-        config=genai_types.GenerateContentConfig(
-            system_instruction=system_prompt,
-            temperature=temperature,
-        ),
+    client = _ensure_openai()
+    chosen_model = model or os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    resp = client.chat.completions.create(
+        model=chosen_model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=temperature,
     )
-    return (resp.text or "").strip()
+    return (resp.choices[0].message.content or "").strip()
+
+
+# Cleaner alias if you want to use it elsewhere
+call_llm = call_gemini
 
 
 # ── 2. Research tool (wraps the scraper) ────────────────────────────────────
