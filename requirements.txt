@@ -1,18 +1,9 @@
-# ── Web framework ──
 flask==3.0.3
- 
-# ── LLM ──
 google-genai==0.3.0
 ollama==0.4.4
- 
-# ── Agent orchestration ──
 langgraph==0.2.50
- 
-# ── Scraping ──
 playwright==1.48.0
 trafilatura==1.12.2
 beautifulsoup4==4.12.3
- 
-# ── Utilities ──
 python-dotenv==1.0.1
 markdown==3.7

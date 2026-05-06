@@ -7,12 +7,11 @@ from typing import TypedDict, Optional
 
 
 class AgentState(TypedDict, total=False):
-    # ── Inputs ──
-    goal: str                  # plain-English goal from the user
+    goal: str                  # prompt from the user
     top_n: int                 # how many articles to fetch (depth slider)
     max_parallel: int          # scraper concurrency
     recipient_email: str       # where to send the final newsletter
-    mode: str                  # "auto" or "hitl"
+    mode: str                  # "auto" or "human in the loop"
 
     # ── Research phase ──
     search_query: str          # query derived from the goal by planner

@@ -1,30 +1,3 @@
-"""
-Graph topology. Reads top-to-bottom like a flowchart:
-
-    START → planner → researcher → writer → critic
-                                              │
-            ┌─────────────────────────────────┤
-            │                                 │
-       (retry_research)                  (retry_writing)
-            │                                 │
-            └────→ planner                    └────→ writer
-                                              │
-                                            (pass)
-                                              │
-                                              ▼
-                                       human_review
-                                       (interrupt here in HITL mode)
-                                              │
-                                              ▼
-                                         publisher
-                                              │
-                                              ▼
-                                            END
-
-The single public function `build_graph(mode)` returns a compiled graph.
-- mode="auto" : runs end-to-end without stopping
-- mode="hitl" : interrupts before human_review, must be resumed externally
-"""
 from __future__ import annotations
 
 from langgraph.graph import StateGraph, START, END

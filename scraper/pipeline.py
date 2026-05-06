@@ -20,7 +20,6 @@ import trafilatura
 from bs4 import BeautifulSoup
 from playwright.async_api import Browser, BrowserContext, Page, async_playwright
 
-# ── Config ──────────────────────────────────────────────────────────────────
 NEWS_SEARCH_URL = "https://html.duckduckgo.com/html/?q={query}"
 
 NEWS_BLOCKED_DOMAINS: set[str] = {
@@ -47,7 +46,6 @@ USER_AGENTS = [
 ]
 
 
-# ── Logging hook (overridable so the agent can stream to UI) ────────────────
 _log_callback = None
 
 def set_log_callback(fn):
@@ -65,8 +63,6 @@ def log(level: str, message: str) -> None:
         except Exception:
             pass
 
-
-# ── Utilities ───────────────────────────────────────────────────────────────
 def _pick_user_agent() -> str:
     return random.choice(USER_AGENTS)
 
@@ -91,8 +87,6 @@ def _resolve_ddg_link(href: str) -> str:
             return qs["uddg"][0]
     return href
 
-
-# ── Browser ─────────────────────────────────────────────────────────────────
 async def _create_context(browser: Browser) -> BrowserContext:
     return await browser.new_context(
         user_agent=_pick_user_agent(),
@@ -102,7 +96,6 @@ async def _create_context(browser: Browser) -> BrowserContext:
     )
 
 
-# ── Search ──────────────────────────────────────────────────────────────────
 async def _fetch_news_urls(context: BrowserContext, query: str, n: int) -> list[str]:
     search_url = NEWS_SEARCH_URL.format(query=quote_plus(query))
     log("info", f"DDG search → {query!r}")
@@ -150,7 +143,6 @@ async def _fetch_news_urls(context: BrowserContext, query: str, n: int) -> list[
     return cleaned
 
 
-# ── Heuristic extraction ────────────────────────────────────────────────────
 _BOILERPLATE_SUBSTRINGS = (
     "accept cookies", "accept all cookies", "cookie policy", "cookie settings",
     "sign in to continue", "sign in to your account", "create an account",
@@ -242,7 +234,6 @@ def _heuristic_extract(html: str) -> str:
     return _heuristic_clean(combined)
 
 
-# ── Per-page scrape ─────────────────────────────────────────────────────────
 async def _scrape_one(browser: Browser, url: str,
                       semaphore: asyncio.Semaphore) -> Optional[dict]:
     async with semaphore:
@@ -290,8 +281,6 @@ async def _scrape_parallel(browser: Browser, urls: list[str],
     results.sort(key=lambda r: order.get(r["url"], 999))
     return results
 
-
-# ── Public entry points ─────────────────────────────────────────────────────
 async def _scrape_topic_async(query: str, top_n: int, max_parallel: int) -> list[dict]:
     async with async_playwright() as pw:
         log("info", "Launching Firefox …")

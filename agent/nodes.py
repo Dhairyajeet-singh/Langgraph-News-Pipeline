@@ -18,9 +18,7 @@ from agent.state import AgentState
 MAX_CRITIC_ITERATIONS = 2  # absolute ceiling on retry loops
 
 
-# ────────────────────────────────────────────────────────────────────────────
 # 1. PLANNER — goal → search query
-# ────────────────────────────────────────────────────────────────────────────
 def planner_node(state: AgentState) -> dict:
     tools._log("info", "── Planner ──")
     goal = state["goal"]
@@ -37,9 +35,7 @@ def planner_node(state: AgentState) -> dict:
     return {"search_query": query}
 
 
-# ────────────────────────────────────────────────────────────────────────────
-# 2. RESEARCHER — runs the scraper
-# ────────────────────────────────────────────────────────────────────────────
+# 2. RESEARCHER — runs the scraper with the query, returns list of articles
 def researcher_node(state: AgentState) -> dict:
     tools._log("info", "── Researcher ──")
     articles = tools.research(
@@ -52,9 +48,7 @@ def researcher_node(state: AgentState) -> dict:
     return {"articles": articles}
 
 
-# ────────────────────────────────────────────────────────────────────────────
 # 3. WRITER — articles → markdown newsletter
-# ────────────────────────────────────────────────────────────────────────────
 def _format_articles_for_writer(articles: list[dict]) -> str:
     """Pack article list into a single user message for the writer LLM."""
     blocks = []
@@ -91,9 +85,7 @@ def writer_node(state: AgentState) -> dict:
     return {"draft_markdown": draft.strip()}
 
 
-# ────────────────────────────────────────────────────────────────────────────
 # 4. CRITIC — score the draft, decide whether to loop
-# ────────────────────────────────────────────────────────────────────────────
 def critic_node(state: AgentState) -> dict:
     tools._log("info", "── Critic ──")
     iteration = state.get("iteration", 0) + 1
@@ -135,9 +127,7 @@ def critic_node(state: AgentState) -> dict:
     }
 
 
-# ────────────────────────────────────────────────────────────────────────────
 # 5. HUMAN REVIEW — placeholder node; graph interrupts BEFORE this in HITL
-# ────────────────────────────────────────────────────────────────────────────
 def human_review_node(state: AgentState) -> dict:
     """
     In HITL mode, the graph is compiled with interrupt_before=["human_review"],
@@ -153,9 +143,7 @@ def human_review_node(state: AgentState) -> dict:
     return {"human_approved": True}
 
 
-# ────────────────────────────────────────────────────────────────────────────
 # 6. PUBLISHER — save .md, send email
-# ────────────────────────────────────────────────────────────────────────────
 def publisher_node(state: AgentState) -> dict:
     tools._log("info", "── Publisher ──")
     md = state["draft_markdown"]

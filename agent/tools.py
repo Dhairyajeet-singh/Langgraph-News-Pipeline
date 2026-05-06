@@ -21,7 +21,6 @@ import markdown as md_lib
 
 from scraper.pipeline import scrape_topic
 
-# ── Logging hook (same pattern as scraper, lets Flask stream logs) ──────────
 _log_callback = None
 
 def set_log_callback(fn):
@@ -37,10 +36,6 @@ def _log(level: str, msg: str):
         except Exception:
             pass
 
-
-# ── 1. LLM tool (OpenAI) ────────────────────────────────────────────────────
-# Function is still named call_gemini() so nodes.py doesn't need to change.
-# The default model is read from OPENAI_MODEL env var, falling back to gpt-4o-mini.
 _openai_client = None
 
 def _ensure_openai() -> OpenAI:
@@ -76,11 +71,9 @@ def call_gemini(system_prompt: str, user_message: str,
     return (resp.choices[0].message.content or "").strip()
 
 
-# Cleaner alias if you want to use it elsewhere
 call_llm = call_gemini
 
 
-# ── 2. Research tool (wraps the scraper) ────────────────────────────────────
 def research(query: str, top_n: int = 7, max_parallel: int = 4) -> list[dict]:
     """
     Returns list of {"url": str, "content": str}. Calls the async scraper.
@@ -91,7 +84,6 @@ def research(query: str, top_n: int = 7, max_parallel: int = 4) -> list[dict]:
     return articles
 
 
-# ── 3. File saving ──────────────────────────────────────────────────────────
 def save_markdown(content: str, output_dir: str = "outputs",
                   prefix: str = "newsletter") -> str:
     os.makedirs(output_dir, exist_ok=True)
@@ -103,7 +95,6 @@ def save_markdown(content: str, output_dir: str = "outputs",
     return path
 
 
-# ── 4. Email sending (SMTP, with markdown rendered to HTML in body) ─────────
 def send_email(recipient: str, subject: str, markdown_body: str,
                attach_path: Optional[str] = None) -> bool:
     """
@@ -118,9 +109,7 @@ def send_email(recipient: str, subject: str, markdown_body: str,
         _log("error", "GMAIL_ADDRESS / GMAIL_APP_PASSWORD missing in .env")
         return False
 
-    # Render markdown → HTML for the email body
     html_body = md_lib.markdown(markdown_body, extensions=["extra", "nl2br"])
-    # Wrap in basic styled HTML so it looks decent in Gmail
     html_full = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>
 body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

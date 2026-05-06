@@ -3,9 +3,7 @@ All LLM prompts live here. Keeping them out of nodes.py makes them
 easy to tune without touching the orchestration logic.
 """
 
-# ────────────────────────────────────────────────────────────────────────────
 # PLANNER — turns a plain-English goal into a focused search query
-# ────────────────────────────────────────────────────────────────────────────
 PLANNER_PROMPT = """You are a research planner. Convert the user's plain-English goal into ONE concise web search query optimized for finding recent news articles.
 
 RULES:
@@ -22,9 +20,7 @@ Goal: "Make a newsletter about new developments in quantum computing."
 Query: latest quantum computing breakthroughs 2026"""
 
 
-# ────────────────────────────────────────────────────────────────────────────
 # WRITER — turns scraped articles into a polished markdown newsletter
-# ────────────────────────────────────────────────────────────────────────────
 WRITER_PROMPT = """You are a professional newsletter writer. You receive raw scraped article text and produce a clean, engaging newsletter in MARKDOWN format.
 
 STRUCTURE (follow exactly):
@@ -57,9 +53,7 @@ RULES:
 - Keep total length 600-1200 words."""
 
 
-# ────────────────────────────────────────────────────────────────────────────
 # CRITIC — evaluates the draft, decides whether to loop
-# ────────────────────────────────────────────────────────────────────────────
 CRITIC_PROMPT = """You are a strict newsletter editor. You receive a markdown newsletter draft and the original goal. Decide if it ships, or what to fix.
 
 RETURN STRICT JSON in this exact shape (no markdown fences, no extra keys):

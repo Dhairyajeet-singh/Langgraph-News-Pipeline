@@ -25,7 +25,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from flask import Flask, Response, jsonify, render_template, request
 
-load_dotenv()  # load .env BEFORE importing modules that read env vars
+load_dotenv()  
 
 from agent import tools
 from agent.graph import build_graph
@@ -34,9 +34,6 @@ from scraper import pipeline as scraper_pipeline
 
 app = Flask(__name__)
 
-# ── Per-job tracking ────────────────────────────────────────────────────────
-# Each job has: log queue, status, final_state, graph (for HITL resume),
-# config (for HITL resume).
 JOBS: dict[str, dict] = {}
 
 
@@ -57,7 +54,6 @@ def _set_status(job_id: str, status: str, **extra):
 def _run_pipeline_thread(job_id: str, params: dict):
     """Background worker. Runs the graph and stores result in JOBS[job_id]."""
     try:
-        # Wire up logging so scraper + tools push into THIS job's queue
         log_cb = _make_log_pipe(job_id)
         tools.set_log_callback(log_cb)
         scraper_pipeline.set_log_callback(log_cb)
@@ -101,7 +97,6 @@ def _run_pipeline_thread(job_id: str, params: dict):
         _set_status(job_id, "error", error=str(exc))
 
 
-# ── Routes ──────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
     return render_template("index.html")
