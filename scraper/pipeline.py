@@ -1,11 +1,3 @@
-"""
-Generalized news scraper. Adapted from the user's existing stock-news pipeline.
-Key changes vs. original:
-  - Accepts arbitrary topic (no fetch_symbol / stock-specific logic)
-  - top_n and max_parallel are parameters (frontend "depth" control)
-  - Returns articles in-memory (caller decides whether to save)
-  - Final Ollama screener is optional and pluggable
-"""
 from __future__ import annotations
 
 import asyncio
