@@ -31,14 +31,14 @@ START → planner → researcher → writer → critic
 
 **Node responsibilities:**
 
-| Node         | Tool used                       | Output                          |
-|--------------|---------------------------------|---------------------------------|
-| `planner`    | Gemini                          | search query                    |
-| `researcher` | Playwright + DuckDuckGo + trafilatura | list of cleaned articles  |
-| `writer`     | Gemini                          | markdown newsletter draft       |
-| `critic`     | Gemini                          | `pass` / `retry_*` + notes      |
-| `human_review` | (interrupt point)             | optionally edited markdown      |
-| `publisher`  | local FS + Gmail SMTP           | saved `.md` + sent email        |
+| Node         | Tool used                             | Output                     |
+|--------------|---------------------------------------|----------------------------|
+| `planner`    | Gpt-4o-mini                           | search query               |
+| `researcher` | Playwright + DuckDuckGo + trafilatura | list of cleaned articles   |
+| `writer`     | Gpt-4o-mini                           | markdown newsletter draft  |
+| `critic`     | Gpt-4o-mini                           | `pass` / `retry_*` + notes |
+| `human_review` | (interrupt point)                   | optionally edited markdown |
+| `publisher`  | local FS + Gmail SMTP                 | saved `.md` + sent email   |
 
 The critic loop is capped at 2 iterations to prevent runaway retries.
 
@@ -46,7 +46,6 @@ The critic loop is capped at 2 iterations to prevent runaway retries.
 
 1. **Web search + scraper** — Playwright (Firefox), DuckDuckGo HTML, trafilatura, BeautifulSoup.
 2. **LLM** — Google Gemini for planning, writing, and critiquing.
-3. **Local LLM** — Ollama / qwen2.5 for the scraper's final-pass content cleaner.
 4. **File saver** — writes timestamped `.md` to `outputs/`.
 5. **Email sender** — Gmail SMTP, sends rendered HTML body + `.md` attachment.
 
@@ -79,8 +78,7 @@ pip install -r requirements.txt
 # 2. Install Playwright browser
 playwright install firefox
 
-# 3. (Optional) Start Ollama for the scraper's local screener
-# ollama pull qwen2.5:7b
+#3 Set up .env file with your openai api key and gmail address, app password (for sending mails to others)
 
 # 4. Configure secrets
 cp .env.example .env
