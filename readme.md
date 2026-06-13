@@ -4,11 +4,12 @@ emoji: 📰
 colorFrom: blue
 colorTo: green
 sdk: docker
+app_file: app.py
 pinned: false
 ---
 # Newsletter Agent
+An autonomous AI agent that researches, writes, critiques, and emails a newsletter on any topic – given only a plain-English goal.
 
-An autonomous AI agent that researches, writes, critiques, and emails a newsletter on any topic — given only a plain-English goal.
 
 ```
 run_newsletter_agent("Create a weekly newsletter on the latest AI agent news.")
