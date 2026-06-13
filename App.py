@@ -215,4 +215,4 @@ def resume_route(job_id: str):
 
 if __name__ == "__main__":
     os.makedirs("outputs", exist_ok=True)
-    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=7860, debug=True, threaded=True, use_reloader=False)
