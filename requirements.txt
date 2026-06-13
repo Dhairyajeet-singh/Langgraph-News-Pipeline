@@ -7,3 +7,4 @@ trafilatura==1.12.2
 beautifulsoup4==4.12.3
 python-dotenv==1.0.1
 markdown==3.7
+openai
