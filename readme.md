@@ -54,7 +54,7 @@ The critic loop is capped at 2 iterations to prevent runaway retries.
 ## Tools used (≥3, per assignment)
 
 1. **Web search + scraper** — Playwright (Firefox), DuckDuckGo HTML, trafilatura, BeautifulSoup.
-2. **LLM** — Google Gemini for planning, writing, and critiquing.
+2. **LLM** — Google OpenAI for planning, writing, and critiquing.
 4. **File saver** — writes timestamped `.md` to `outputs/`.
 5. **Email sender** — Gmail SMTP, sends rendered HTML body + `.md` attachment.
 
@@ -67,7 +67,7 @@ newsletter-agent/
 │   ├── state.py              # AgentState TypedDict
 │   ├── graph.py              # LangGraph topology (~50 lines)
 │   ├── nodes.py              # node implementations
-│   ├── tools.py              # Gemini, file save, email send
+│   ├── tools.py              # OpenAI, file save, email send
 │   └── prompts.py            # all LLM prompts
 ├── scraper/
 │   └── pipeline.py           # generalized scraper (sync wrapper around async Playwright)
@@ -91,7 +91,7 @@ playwright install firefox
 
 # 4. Configure secrets
 cp .env.example .env
-# edit .env with your Gemini key + Gmail app password
+# edit .env with your OpenAI key + Gmail app password
 
 # 5. Run
 python app.py
@@ -110,7 +110,7 @@ python app.py
 |---|---|
 | Goal input | `app.py` POST /run, or `agent.graph.run_newsletter_agent(goal)` |
 | Multi-step reasoning | 6-node LangGraph in `agent/graph.py` |
-| Tool use (≥3) | scraper + Gemini + Ollama + file save + SMTP |
+| Tool use (≥3) | scraper + OpenAI + Ollama + file save + SMTP |
 | Self-reflection | `critic_node` with `retry_research` / `retry_writing` verdicts |
 | Single-call autonomy | `run_newsletter_agent(goal)` in `agent/graph.py` |
 | Auto / HITL toggle | `mode` param + `interrupt_before` in `build_graph()` |
